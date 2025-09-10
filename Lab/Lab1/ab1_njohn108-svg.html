@@ -1,16 +1,49 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Lab 1 for Web GIS</title>
+  <title>Interactive Map - UNC Charlotte</title>
+  <style>
+    /* Set the size of the map */
+    #map {
+      height: 500px; 
+      width: 100%; 
+    }
+  </style>
 </head>
 <body>
   <h1>Lab 1 for Web GIS</h1>
   <h3>Name: Nicholas Johnson</h3>
-  <!--This is a comment-->
+  <h3>Interactive Map of UNC Charlotte</h3>
 
-  <h3>Map of UNC-Charlotte</h3>
-  <img 
-    src="https://maps.googleapis.com/maps/api/staticmap?center=UNCC,Charlotte,NC&zoom=14&scale=1&size=512x512&maptype=hybrid&key=YOUR_API_KEY" 
-    alt="Google Map of UNC Charlotte">
+  <!-- The div where the map will appear -->
+  <div id="map"></div>
+
+  <!-- Load Google Maps JavaScript API -->
+  <script async
+    src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap">
+  </script>
+
+  <script>
+    // Initialize and add the map
+    function initMap() {
+      // Coordinates for UNC Charlotte
+      const uncc = { lat: 35.3076, lng: -80.7330 };
+
+      // Create the map centered at UNC Charlotte
+      const map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 14,
+        center: uncc,
+        mapTypeId: "hybrid", // "roadmap", "satellite", "hybrid", "terrain"
+      });
+
+      // Add a marker at UNC Charlotte
+      const marker = new google.maps.Marker({
+        position: uncc,
+        map: map,
+        title: "UNC Charlotte"
+      });
+    }
+  </script>
 </body>
 </html>
+
