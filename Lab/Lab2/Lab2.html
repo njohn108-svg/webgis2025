@@ -5,56 +5,116 @@
 <title>Lab 2 for Web GIS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-html { height:100% }
-body { height:100%; margin:0; padding:0 }
-#map_canvas { height:60vh; width:100% }
+ html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    #McEniryMap, #BankOfAmericaStadium, #MiamiBeachFL, #TimesSquareNYC, #TerrainMapGrandCanyonAZ, #RomanColosseum {
+      height: 50vh;
+      width: 50%;
+      margin-bottom: 20px;
+    }
+
 </style>
-<script
-src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAI6BihwHgOqvuwWsRaGC2i7HgLndsBTbM">
-</script>
-<script>
-function initialize()
-{
-var latlng = new google.maps.LatLng(35.306840, -80.73200);
-var myOptions = {
-zoom: 16,
-center: latlng,
-mapTypeId: google.maps.MapTypeId.HYBRID
-};
-new google.maps.Map(document.getElementById("map_canvas"),
-myOptions);
-}
-</script>
 </head>
- <body onload="initialize()">
+<body>
 <h1>Lab 2 for Web GIS</h1>
-<h3>Name: Nicholas Johnson </h3>
-<!-- Comments-->
-<h3>Current Date is: </h3>
-<script type="text/javascript">
-document.write(Date());
-</script>
-<h3>Generate a random number: </h3>
-<script type="text/javascript">
-document.write(Math.random());
-var str1="Hello World"
-document.write(str1);
-var x=5;  
-document.write(x);
-var y=10;
-var z=x+y;
-document.write(z);
-document.write("<br>");
-</script>  
-  <h3>Define a function </h3>
-<script type="text/javascript">
-   function mul2(x1, x2) {
+<h3>Name: Nicholas Johnson</h3>
+  <h3>Current Date is:</h3>
+  <script type="text/javascript">
+    document.write(new Date());
+  </script>
+  
+    <h3>Generate a random number:</h3>
+  <script type="text/javascript">
+    document.write(Math.random());
+  </script>
+  
+    <h3>Define variables and perform calculation:</h3>
+  <script>
+    var str1 = "Hello World";
+    document.write(str1 + "<br>");
+    var x = 5;
+    var y = 10;
+    var z = x + y;
+    document.write("x + y = " + z + "<br><br>");
+  </script>
+  <h3>Define a function:</h3>
+  <script type="text/javascript">
+    function mul2(x1, x2) {
       return x1 * x2;
     }
     var x3 = mul2(200, 300);
     document.write(x3);
+  </script> 
 
-</script>
-<div id="map_canvas" style="width:50%; height:50%"></div>
+<h3>Interactive Map of UNC Charlotte</h3>
+  <div id="McEniryMap"></div>
+
+  <h3>Interactive Map of Bank of America Stadium</h3>
+  <div id="BankOfAmericaStadium"></div>
+
+  <h3>Interactive Map of Miami Beach FL</h3>
+  <div id="MiamiBeachFL"></div>
+
+  <h3>Interactive Map of Times Square NYC</h3>
+  <div id="TimesSquareNYC"></div>
+
+  <h3>Interactive Map of Grand Canyon AZ</h3>
+  <div id="TerrainMapGrandCanyonAZ"></div>
+
+  <h3>Interactive Map of Roman Colosseum</h3>
+  <div id="RomanColosseum"></div>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAI6BihwHgOqvuwWsRaGC2i7HgLndsBTbM">
+ </script>
+ 
+ <script type="text/javascript">
+    function initializeMcEniryMap() {
+      var latlng = new google.maps.LatLng(35.306840, -80.732000);
+      var options = { zoom: 16, center: latlng, mapTypeId: google.maps.MapTypeId.HYBRID };
+      new google.maps.Map(document.getElementById("McEniryMap"), options);
+    }
+
+    function initializeBankOfAmericaStadium() {
+      var latlng = new google.maps.LatLng(35.22551407728999, -80.85283204045771);
+      var options = { zoom: 15, center: latlng, mapTypeId: google.maps.MapTypeId.HYBRID };
+      new google.maps.Map(document.getElementById("BankOfAmericaStadium"), options);
+    }
+    
+    function initializeMiamiBeachFL() {
+      var latlng = new google.maps.LatLng(25.78343012651251725, -80.12862720590736);
+      var options = { zoom: 18, center: latlng, mapTypeId: google.maps.MapTypeId.HYBRID };
+      new google.maps.Map(document.getElementById("MiamiBeachFL"), options);
+    }
+
+    function initializeTimesSquareNYC() {
+      var latlng = new google.maps.LatLng(40.758784059908734, -73.98528475558174);
+      var options = { zoom: 14, center: latlng, mapTypeId: google.maps.MapTypeId.HYBRID };
+      new google.maps.Map(document.getElementById("TimesSquareNYC"), options);
+    }
+
+    function initializeTerrainMapGrandCanyonAZ() {
+      var latlng = new google.maps.LatLng(36.099880487302705, -112.11189919675587);
+      var options = { zoom: 17, center: latlng, mapTypeId: google.maps.MapTypeId.HYBRID };
+      new google.maps.Map(document.getElementById("TerrainMapGrandCanyonAZ"), options);
+    }
+
+    function initializeRomanColosseum() {
+      var latlng = new google.maps.LatLng(41.890194197603506, 12.492241624737554);
+      var options = { zoom: 17, center: latlng, mapTypeId: google.maps.MapTypeId.HYBRID };
+      new google.maps.Map(document.getElementById("RomanColosseum"), options);
+    }
+    
+ window.onload = function () {
+      initializeMcEniryMap();
+ initializeBankOfAmericaStadium();
+      initializeMiamiBeachFL();
+      initializeTimesSquareNYC();
+  initializeTerrainMapGrandCanyonAZ();
+      initializeRomanColosseum();
+    };
+  </script>
 </body>
 </html>
