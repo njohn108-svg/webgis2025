@@ -69,3 +69,172 @@
     </script>
   </body>
 </html>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Question 1 – North Carolina Map (OSM) – Nicholas Johnson</title>
+  <script src="https://cdn.jsdelivr.net/npm/ol@v10.6.1/dist/ol.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.6.1/ol.css">
+</head>
+<body>
+  <h2>Question 1 – OpenStreetMap of North Carolina</h2>
+  <h3>Author: Nicholas Johnson</h3>
+  <div id="map" style="width:800px;height:600px;border:2px solid #000;"></div>
+
+  <script>
+    var OSM = new ol.layer.Tile({ source: new ol.source.OSM() });
+
+    var map = new ol.Map({
+      target: 'map',
+      layers: [OSM],
+      view: new ol.View({ projection: 'EPSG:3857', zoom: 7 })
+    });
+
+    var ncExtent4326 = [-84.321869, 33.842316, -75.460621, 36.588117];
+    var ncExtent3857 = ol.proj.transformExtent(ncExtent4326, 'EPSG:4326', 'EPSG:3857');
+    map.getView().fit(ncExtent3857, { size: map.getSize(), padding: [20,20,20,20], duration:300 });
+  </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Question 2 – Azure Maps Basemap Switcher – Nicholas Johnson</title>
+  <script src="https://cdn.jsdelivr.net/npm/ol@v10.6.1/dist/ol.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.6.1/ol.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol-layerswitcher@4.1.2/dist/ol-layerswitcher.css">
+  <script src="https://cdn.jsdelivr.net/npm/ol-layerswitcher@4.1.2/dist/ol-layerswitcher.js"></script>
+</head>
+<body>
+  <h2>Question 2 – Azure Maps Basemap Switcher</h2>
+  <h3>Author: Nicholas Johnson</h3>
+  <div id="map" style="width:800px;height:600px;border:2px solid #000;"></div>
+
+  <script>
+    var AZURE_KEY = '8JpohGxKC5AHhR0iqQigE4HrL3dwRfpCXQjlAH8fStlQG3a7ofuBJQQJ99BJACYeBjFNMnj2AAAgAZMPeLst';
+
+    var road = new ol.layer.Tile({
+      title:'Azure Road', type:'base', visible:true,
+      source:new ol.source.XYZ({ url:`https://atlas.microsoft.com/map/tile?api-version=2022-08-01&tilesetId=microsoft.base.road&zoom={z}&x={x}&y={y}&subscription-key=${AZURE_KEY}` })
+    });
+    var dark = new ol.layer.Tile({
+      title:'Azure Dark Grey', type:'base', visible:false,
+      source:new ol.source.XYZ({ url:`https://atlas.microsoft.com/map/tile?api-version=2022-08-01&tilesetId=microsoft.base.darkgrey&zoom={z}&x={x}&y={y}&subscription-key=${AZURE_KEY}` })
+    });
+    var imagery = new ol.layer.Tile({
+      title:'Azure Imagery', type:'base', visible:false,
+      source:new ol.source.XYZ({ url:`https://atlas.microsoft.com/map/tile?api-version=2022-08-01&tilesetId=microsoft.imagery&zoom={z}&x={x}&y={y}&subscription-key=${AZURE_KEY}` })
+    });
+    var terra = new ol.layer.Tile({
+      title:'Azure Terra', type:'base', visible:false,
+      source:new ol.source.XYZ({ url:`https://atlas.microsoft.com/map/tile?api-version=2022-08-01&tilesetId=microsoft.terra.main&zoom={z}&x={x}&y={y}&subscription-key=${AZURE_KEY}` })
+    });
+
+    var baseGroup = new ol.layer.Group({ title:'Base Maps', layers:[road,dark,imagery,terra] });
+
+    var map = new ol.Map({
+      target:'map', layers:[baseGroup],
+      view:new ol.View({ center:ol.proj.fromLonLat([-79.0193,35.7596]), zoom:7 })
+    });
+
+    map.addControl(new ol.control.LayerSwitcher({ tipLabel:'Basemap Switcher' }));
+  </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Question 3 – North Carolina with WMS Overlay – Nicholas Johnson</title>
+  <script src="https://cdn.jsdelivr.net/npm/ol@v10.6.1/dist/ol.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.6.1/ol.css">
+</head>
+<body>
+  <h2>Question 3 – North Carolina with WMS Overlay</h2>
+  <h3>Author: Nicholas Johnson</h3>
+  <div id="map" style="width:800px;height:600px;border:2px solid #000;"></div>
+
+  <script>
+    var OSM = new ol.layer.Tile({ source:new ol.source.OSM() });
+    var wms = new ol.layer.Tile({
+      source:new ol.source.TileWMS({
+        url:'https://ahocevar.com/geoserver/wms',
+        params:{ 'LAYERS':'topp:states','TILED':true,'FORMAT':'image/png','TRANSPARENT':true },
+        serverType:'geoserver'
+      })
+    });
+
+    var map = new ol.Map({
+      target:'map',
+      layers:[OSM,wms],
+      view:new ol.View({ projection:'EPSG:3857', zoom:7 })
+    });
+
+    var ncExtent4326=[-84.321869,33.842316,-75.460621,36.588117];
+    var ncExtent3857=ol.proj.transformExtent(ncExtent4326,'EPSG:4326','EPSG:3857');
+    map.getView().fit(ncExtent3857,{size:map.getSize(),padding:[20,20,20,20],duration:300});
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Question 4 – Tasmania WMS Integration – Nicholas Johnson</title>
+  <script src="https://cdn.jsdelivr.net/npm/ol@v10.6.1/dist/ol.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.6.1/ol.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol-layerswitcher@4.1.2/dist/ol-layerswitcher.css">
+  <script src="https://cdn.jsdelivr.net/npm/ol-layerswitcher@4.1.2/dist/ol-layerswitcher.js"></script>
+</head>
+<body>
+  <h2>Question 4 – Tasmania WMS Integration</h2>
+  <h3>Author: Nicholas Johnson</h3>
+  <div id="map" style="width:800px;height:600px;border:2px solid #000;"></div>
+
+  <script>
+    var AZURE_KEY='8JpohGxKC5AHhR0iqQigE4HrL3dwRfpCXQjlAH8fStlQG3a7ofuBJQQJ99BJACYeBjFNMnj2AAAgAZMPeLst';
+    var azureBase=new ol.layer.Tile({
+      title:'Azure Base (Road)', type:'base', visible:true,
+      source:new ol.source.XYZ({ url:`https://atlas.microsoft.com/map/tile?api-version=2022-08-01&tilesetId=microsoft.base.road&zoom={z}&x={x}&y={y}&subscription-key=${AZURE_KEY}` })
+    });
+
+    var wmsUrl='https://data.stategrowth.tas.gov.au/geoserver/ows';
+    var carriageway=new ol.layer.Tile({
+      title:'Carriageways', visible:true,
+      source:new ol.source.TileWMS({ url:wmsUrl, params:{'LAYERS':'ssg:GEO_CARRIAGEWAY','TILED':true,'FORMAT':'image/png','TRANSPARENT':true} })
+    });
+    var cadastre=new ol.layer.Tile({
+      title:'Cadastre Parcels', visible:false,
+      source:new ol.source.TileWMS({ url:wmsUrl, params:{'LAYERS':'pam:GEO_CADASTRE','TILED':true,'FORMAT':'image/png','TRANSPARENT':true} })
+    });
+    var trips=new ol.layer.Tile({
+      title:'Bus Trips', visible:false,
+      source:new ol.source.TileWMS({ url:wmsUrl, params:{'LAYERS':'ssg:GEO_BRM_TRIP','TILED':true,'FORMAT':'image/png','TRANSPARENT':true} })
+    });
+
+    var baseGroup=new ol.layer.Group({ title:'Base Maps', layers:[azureBase] });
+    var overlayGroup=new ol.layer.Group({ title:'Overlays', layers:[carriageway,cadastre,trips] });
+
+    var map=new ol.Map({
+      target:'map',
+      layers:[baseGroup,overlayGroup],
+      view:new ol.View({ center:ol.proj.fromLonLat([146.7,-42.0]), zoom:7 })
+    });
+
+    map.addControl(new ol.control.LayerSwitcher({ tipLabel:'Toggle Layers' }));
+  </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Question 5 – GitHub Pages Deployment – Nicholas Johnson</title>
+</head>
+<body>
+  
