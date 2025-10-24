@@ -184,57 +184,133 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Question 4 – Tasmania WMS Integration – Nicholas Johnson</title>
+  <title>Question 4 – Tasmania WMS Integration – Author: Nicholas Johnson</title>
   <script src="https://cdn.jsdelivr.net/npm/ol@v10.6.1/dist/ol.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.6.1/ol.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol-layerswitcher@4.1.2/dist/ol-layerswitcher.css">
   <script src="https://cdn.jsdelivr.net/npm/ol-layerswitcher@4.1.2/dist/ol-layerswitcher.js"></script>
 </head>
 <body>
-  <h2>Question 4 – Tasmania WMS Integration</h2>
-  <h3>Author: Nicholas Johnson</h3>
-  <div id="map" style="width:800px;height:600px;border:2px solid #000;"></div>
-
-  <script>
-    var AZURE_KEY='8JpohGxKC5AHhR0iqQigE4HrL3dwRfpCXQjlAH8fStlQG3a7ofuBJQQJ99BJACYeBjFNMnj2AAAgAZMPeLst';
-    var azureBase=new ol.layer.Tile({
-      title:'Azure Base (Road)', type:'base', visible:true,
-      source:new ol.source.XYZ({ url:`https://atlas.microsoft.com/map/tile?api-version=2022-08-01&tilesetId=microsoft.base.road&zoom={z}&x={x}&y={y}&subscription-key=${AZURE_KEY}` })
-    });
-
-    var wmsUrl='https://data.stategrowth.tas.gov.au/geoserver/ows';
-    var carriageway=new ol.layer.Tile({
-      title:'Carriageways', visible:true,
-      source:new ol.source.TileWMS({ url:wmsUrl, params:{'LAYERS':'ssg:GEO_CARRIAGEWAY','TILED':true,'FORMAT':'image/png','TRANSPARENT':true} })
-    });
-    var cadastre=new ol.layer.Tile({
-      title:'Cadastre Parcels', visible:false,
-      source:new ol.source.TileWMS({ url:wmsUrl, params:{'LAYERS':'pam:GEO_CADASTRE','TILED':true,'FORMAT':'image/png','TRANSPARENT':true} })
-    });
-    var trips=new ol.layer.Tile({
-      title:'Bus Trips', visible:false,
-      source:new ol.source.TileWMS({ url:wmsUrl, params:{'LAYERS':'ssg:GEO_BRM_TRIP','TILED':true,'FORMAT':'image/png','TRANSPARENT':true} })
-    });
-
-    var baseGroup=new ol.layer.Group({ title:'Base Maps', layers:[azureBase] });
-    var overlayGroup=new ol.layer.Group({ title:'Overlays', layers:[carriageway,cadastre,trips] });
-
-    var map=new ol.Map({
-      target:'map',
-      layers:[baseGroup,overlayGroup],
-      view:new ol.View({ center:ol.proj.fromLonLat([146.7,-42.0]), zoom:7 })
-    });
-
-    map.addControl(new ol.control.LayerSwitcher({ tipLabel:'Toggle Layers' }));
-  </script>
-</body>
-</html>
-
-<!DOCTYPE html>
-<html>
+ <!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Question 5 – GitHub Pages Deployment – Nicholas Johnson</title>
+<meta charset="utf-8" />
+<title>Tasmania Web GIS</title>
+
+<!-- OpenLayers -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.6.1/ol.css" />
+<script src="https://cdn.jsdelivr.net/npm/ol@v10.6.1/dist/ol.js"></script>
+
+<!-- Layer Switcher -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol-layerswitcher@4.1.2/dist/ol-layerswitcher.css" />
+<script src="https://cdn.jsdelivr.net/npm/ol-layerswitcher@4.1.2/dist/ol-layerswitcher.js"></script>
+
+<style>
+  html, body { height: 100%; margin: 0; font-family: Arial, sans-serif; }
+  #header {
+    padding: 10px;
+    background: #f5f5f5;
+    border-bottom: 1px solid #ccc;
+  }
+  #map { width: 100%; height: calc(100vh - 60px); } /* leave space for header */
+</style>
 </head>
 <body>
-  
+
+<div id="header">
+  <h3>Lab 3: Question 4</h3>
+  <h4>Author: Nicholas Johnson</h4>
+</div>
+
+<div id="map"></div>
+
+<script>
+const AZURE_KEY = "8JpohGxKC5AHhR0iqQigE4HrL3dwRfpCXQjlAH8fStlQG3a7ofuBJQQJ99BJACYeBjFNMnj2AAAgAZMPeLst";
+const wmsUrl = "https://data.stategrowth.tas.gov.au/geoserver/ows";
+
+// Tasmania center
+const tasCenter = ol.proj.fromLonLat([146.8, -42.0]);
+
+// Base layer: Azure Road
+const azureRoad = new ol.layer.Tile({
+  title: "Azure Maps Road",
+  type: "base",
+  visible: true,
+  source: new ol.source.XYZ({
+    url: `https://atlas.microsoft.com/map/tile?api-version=2022-08-01&tilesetId=microsoft.base.road&zoom={z}&x={x}&y={y}&subscription-key=${AZURE_KEY}`,
+    crossOrigin: "anonymous",
+    maxZoom: 19
+  })
+});
+
+// WMS layers
+const carriageways = new ol.layer.Tile({
+  title: "Carriageways (WMS)",
+  source: new ol.source.TileWMS({
+    url: wmsUrl,
+    params: {
+      LAYERS: "ssg:GEO_CARRIAGEWAY",
+      FORMAT: "image/png",
+      TRANSPARENT: true,
+      VERSION: "1.3.0",
+      CRS: "CRS:84"
+    },
+    serverType: "geoserver",
+    crossOrigin: "anonymous"
+  }),
+  visible: true
+});
+
+const cadastre = new ol.layer.Tile({
+  title: "Cadastre Parcels (WMS)",
+  source: new ol.source.TileWMS({
+    url: wmsUrl,
+    params: {
+      LAYERS: "pam:GEO_CADASTRE",
+      FORMAT: "image/png",
+      TRANSPARENT: true,
+      VERSION: "1.3.0",
+      CRS: "CRS:84"
+    },
+    serverType: "geoserver",
+    crossOrigin: "anonymous"
+  }),
+  visible: false
+});
+
+const busTrips = new ol.layer.Tile({
+  title: "Bus Trips (WMS)",
+  source: new ol.source.TileWMS({
+    url: wmsUrl,
+    params: {
+      LAYERS: "ssg:GEO_BRM_TRIP",
+      FORMAT: "image/png",
+      TRANSPARENT: true,
+      VERSION: "1.3.0",
+      CRS: "CRS:84"
+    },
+    serverType: "geoserver",
+    crossOrigin: "anonymous"
+  }),
+  visible: false
+});
+
+// Map
+const map = new ol.Map({
+  target: "map",
+  layers: [
+    new ol.layer.Group({ title: "Base Maps", layers: [azureRoad] }),
+    new ol.layer.Group({ title: "Tasmania Overlays", layers: [carriageways, cadastre, busTrips] })
+  ],
+  view: new ol.View({
+    center: tasCenter,
+    zoom: 7
+  }),
+  controls: [
+    new ol.control.Zoom(),
+    new LayerSwitcher({ tipLabel: "Layers", groupSelectStyle: "children" })
+  ]
+});
+</script>
+
+</body>
