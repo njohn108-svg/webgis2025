@@ -1,1 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenLayers vs Leaflet - Basemap & WMS Comparison</title>
+  
+  <!-- OpenLayers -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.6.1/ol.css">
+  <script src="https://cdn.jsdelivr.net/npm/ol@v10.6.1/dist/ol.js"></script>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      text-align: center;
+      margin-top: 15px;
+      margin-bottom: 20px;
+    }
+    .map-section {
+      width: 90%;
+      height: 45vh;
+      margin-bottom: 50px;
+      position: relative;
+    }
+    .map-title {
+      text-align: center;
+      margin: 10px 0;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+    #mapOL, #mapLeaflet {
+      width: 100%;
+      height: 100%;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+    }
+    .controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Comparison of Leaflet and OpenLayers Web Maps with OSM, ESRI, and WMS Layers</h1>
+
+  <!-- Leaflet Map -->
+  <div class="map-section">
+    <div class="map-title">Leaflet Map</div>
+    <div id="mapLeaflet"></div>
+    <div class="controls" id="controlsLeaflet">
+      <label><input type="radio" name="basemapLeaflet" value="osm" checked> OSM Basemap</label>
+      <label><input type="radio" name="basemapLeaflet" value="esri"> ESRI Imagery</label>
+      <label><input type="checkbox" id="wmsLeafletToggle" checked> Show WMS Layer</label>
+    </div>
+  </div>
+
+  <!-- OpenLayers Map -->
+  <div class="map-section">
+    <div class="map-title">OpenLayers Map</div>
+    <div id="mapOL"></div>
+    <div class="controls" id="controlsOL">
+      <label><input type="radio" name="basemapOL" value="osm" checked> OSM Basemap</label>
+      <label><input type="radio" name="basemapOL" value="esri"> ESRI Imagery</label>
+      <label><input type="checkbox" id="wmsOLToggle" checked> Show WMS Layer</label>
+    </div>
+  </div>
+
+  <script>
+    // ======================== Leaflet Map ========================
+    const mapLeaflet = L.map('mapLeaflet', {
+      center: [39.5, -98.5],
+      zoom: 4
+    });
+
+    const osmLeaflet = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(mapLeaflet);
+
+    const esriLeaflet = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles © Esri'
+    });
+
+    const wmsLeaflet = L.tileLayer.wms('https://ahocevar.com/geoserver/wms', {
+      layers: 'topp:states',
+      format: 'image/png',
+      transparent: true,
+      attribution: 'GeoServer topp:states'
+    }).addTo(mapLeaflet);
+
+    document.querySelectorAll('input[name="basemapLeaflet"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        const val = e.target.value;
+        if (val === 'osm') {
+          mapLeaflet.addLayer(osmLeaflet);
+          mapLeaflet.removeLayer(esriLeaflet);
+        } else {
+          mapLeaflet.addLayer(esriLeaflet);
+          mapLeaflet.removeLayer(osmLeaflet);
+        }
+        if (mapLeaflet.hasLayer(wmsLeaflet)) {
+          wmsLeaflet.bringToFront();
+        }
+      });
+    });
+
+    document.getElementById('wmsLeafletToggle').addEventListener('change', (e) => {
+      if (e.target.checked) {
+        mapLeaflet.addLayer(wmsLeaflet);
+        wmsLeaflet.bringToFront();
+      } else {
+        mapLeaflet.removeLayer(wmsLeaflet);
+      }
+    });
+
+    // ======================== OpenLayers Map ========================
+    const osmOL = new ol.layer.Tile({ source: new ol.source.OSM(), visible: true });
+    const esriOL = new ol.layer.Tile({
+      source: new ol.source.XYZ({
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        attributions: 'Tiles © Esri'
+      }),
+      visible: false
+    });
+    const wmsOL = new ol.layer.Tile({
+      source: new ol.source.TileWMS({
+        url: 'https://ahocevar.com/geoserver/wms',
+        params: { 'LAYERS': 'topp:states', 'TILED': true },
+        serverType: 'geoserver',
+        crossOrigin: 'anonymous'
+      }),
+      visible: true
+    });
+
+    const mapOL = new ol.Map({
+      target: 'mapOL',
+      layers: [osmOL, esriOL, wmsOL],
+      view: new ol.View({
+        center: ol.proj.fromLonLat([-98.5, 39.5]),
+        zoom: 4
+      })
+    });
+
+    document.querySelectorAll('input[name="basemapOL"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        const val = e.target.value;
+        osmOL.setVisible(val === 'osm');
+        esriOL.setVisible(val === 'esri');
+      });
+    });
+
+    document.getElementById('wmsOLToggle').addEventListener('change', (e) => {
+      wmsOL.setVisible(e.target.checked);
+    });
+  </script>
+</body>
+</html>
 
