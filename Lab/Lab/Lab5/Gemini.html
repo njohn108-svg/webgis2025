@@ -1,0 +1,187 @@
+!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenLayers Basemap & WMS App</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* OpenLayers required CSS */
+        @import url('https://cdn.jsdelivr.net/npm/ol@v8.2.0/ol.css');
+        /* Set the map container to fill the remaining space */
+        #map {
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
+            min-height: 400px;
+        }
+        /* Custom font */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Ensure the main container fills the viewport */
+        .app-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+    </style>
+    <!-- Load OpenLayers library -->
+    <script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1c4587',
+                        'light-blue': '#e0f2fe',
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div class="app-container">
+
+        <!-- Header -->
+        <header class="p-4 bg-primary-blue text-white shadow-lg">
+            <h1 class="text-2xl font-bold">Geospatial Map Viewer</h1>
+            <p class="text-sm opacity-80">OpenLayers Basemap Switching and WMS Layer Control</p>
+        </header>
+
+        <!-- Main Content Area (Controls and Map) -->
+        <div class="flex flex-col lg:flex-row flex-grow overflow-hidden">
+
+            <!-- Controls Panel -->
+            <div id="controls" class="p-6 lg:w-72 bg-white shadow-xl flex-shrink-0">
+                <div class="space-y-6">
+
+                    <!-- Basemap Switcher -->
+                    <div>
+                        <h2 class="text-xl font-semibold mb-3 text-primary-blue">Basemap Selector</h2>
+                        <div class="space-y-2">
+                            <label for="osmRadio" class="flex items-center space-x-2 p-3 bg-light-blue rounded-lg cursor-pointer transition hover:bg-blue-200">
+                                <input type="radio" id="osmRadio" name="basemap" value="osm" checked class="form-radio text-primary-blue h-4 w-4">
+                                <span class="font-medium text-gray-700">OpenStreetMap (OSM)</span>
+                            </label>
+                            <label for="esriRadio" class="flex items-center space-x-2 p-3 bg-light-blue rounded-lg cursor-pointer transition hover:bg-blue-200">
+                                <input type="radio" id="esriRadio" name="basemap" value="esri" class="form-radio text-primary-blue h-4 w-4">
+                                <span class="font-medium text-gray-700">ESRI World Imagery</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- WMS Layer Toggle -->
+                    <div>
+                        <h2 class="text-xl font-semibold mb-3 text-primary-blue">WMS Layer Control</h2>
+                        <label for="wmsCheckbox" class="flex items-center space-x-3 p-3 bg-light-blue rounded-lg cursor-pointer transition hover:bg-blue-200">
+                            <input type="checkbox" id="wmsCheckbox" class="form-checkbox text-red-600 h-5 w-5 rounded focus:ring-red-500">
+                            <span class="font-medium text-gray-700">Show US States (WMS)</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map Container -->
+            <div id="map" class="shadow-inner rounded-l-xl"></div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // Define map center (Continental US) and initial zoom
+            const initialCenter4326 = [-98.5, 39.8];
+            const initialZoom = 4.5;
+            
+            // OpenLayers requires coordinates in EPSG:3857 (Web Mercator) for the view
+            const initialCenter3857 = ol.proj.fromLonLat(initialCenter4326);
+
+            // 1. Basemap Layers
+            const osmLayer = new ol.layer.Tile({
+                title: 'OpenStreetMap',
+                type: 'base',
+                visible: true,
+                source: new ol.source.OSM()
+            });
+
+            const esriLayer = new ol.layer.Tile({
+                title: 'ESRI Imagery',
+                type: 'base',
+                visible: false,
+                source: new ol.source.XYZ({
+                    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                    attributions: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, swisstopo, and the GIS User Community'
+                })
+            });
+
+            // 2. WMS Overlay Layer (topp:states)
+            const wmsLayer = new ol.layer.Tile({
+                title: 'US States WMS',
+                source: new ol.source.TileWMS({
+                    url: 'https://ahocevar.com/geoserver/wms',
+                    params: {
+                        'LAYERS': 'topp:states',
+                        'TILED': true,
+                        'FORMAT': 'image/png', // Use transparent format
+                    },
+                    serverType: 'geoserver',
+                }),
+                visible: false, // Starts hidden
+                opacity: 0.5 // Add some transparency to see basemap underneath
+            });
+
+            // 3. Initialize the Map
+            const map = new ol.Map({
+                target: 'map',
+                layers: [
+                    osmLayer, // Initial default basemap
+                    esriLayer,
+                    wmsLayer  // Overlay layer
+                ],
+                view: new ol.View({
+                    center: initialCenter3857,
+                    zoom: initialZoom,
+                    maxZoom: 18,
+                    minZoom: 3,
+                })
+            });
+
+            // --- Control Logic ---
+
+            // A. Basemap Switcher Logic (Radio Buttons)
+            const basemapRadios = document.querySelectorAll('input[name="basemap"]');
+            
+            basemapRadios.forEach(radio => {
+                radio.addEventListener('change', (event) => {
+                    const selectedBasemap = event.target.value;
+                    
+                    // Logic to set visibility: only one 'base' layer should be visible at a time
+                    if (selectedBasemap === 'osm') {
+                        osmLayer.setVisible(true);
+                        esriLayer.setVisible(false);
+                        console.log('Switched basemap to OSM.');
+                    } else if (selectedBasemap === 'esri') {
+                        osmLayer.setVisible(false);
+                        esriLayer.setVisible(true);
+                        console.log('Switched basemap to ESRI Imagery.');
+                    }
+                });
+            });
+
+            // B. WMS Layer Toggle Logic (Checkbox)
+            const wmsCheckbox = document.getElementById('wmsCheckbox');
+            
+            wmsCheckbox.addEventListener('change', (event) => {
+                const isVisible = event.target.checked;
+                wmsLayer.setVisible(isVisible);
+                console.log(`WMS layer visibility set to: ${isVisible}`);
+            });
+        });
+    </script>
+</body>
+</html>
