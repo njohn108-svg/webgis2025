@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>OpenLayers Basemap Switcher with WMS</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol/ol.css">
+  <title>Leaflet Basemap Switcher with WMS</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     body { margin: 0; padding: 0; }
     #map { width: 100%; height: 90vh; }
@@ -25,56 +25,54 @@
   </div>
   <div id="map"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/ol/ol.js"></script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    // OSM basemap
-    const osmLayer = new ol.layer.Tile({
-      source: new ol.source.OSM(),
-      visible: true
+    // Define basemaps
+    const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
     });
 
-    // ESRI imagery basemap (correct XYZ source)
-    const esriLayer = new ol.layer.Tile({
-      source: new ol.source.XYZ({
-        attributions: 'Tiles © Esri',
-        url: 'https://services.arcgisonline.com/ArcGIS/rest/services/' +
-             'World_Imagery/MapServer/tile/{z}/{y}/{x}'
-      }),
-      visible: false
+    const esriLayer = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles © Esri'
+      }
+    );
+
+    // Define WMS overlay
+    const wmsLayer = L.tileLayer.wms('https://ahocevar.com/geoserver/wms', {
+      layers: 'topp:states',
+      format: 'image/png',
+      transparent: true,
+      attribution: 'WMS © GeoServer'
     });
 
-    // WMS overlay
-    const wmsLayer = new ol.layer.Image({
-      source: new ol.source.ImageWMS({
-        url: 'https://ahocevar.com/geoserver/wms',
-        params: { 'LAYERS': 'topp:states' },
-        ratio: 1,
-        serverType: 'geoserver'
-      }),
-      visible: false
-    });
-
-    // Map
-    const map = new ol.Map({
-      target: 'map',
-      layers: [osmLayer, esriLayer, wmsLayer],
-      view: new ol.View({
-        center: ol.proj.fromLonLat([-98.5, 39.8]), // continental US
-        zoom: 4
-      })
+    // Initialize map centered on continental US
+    const map = L.map('map', {
+      center: [39.8, -98.5], // lat, lon
+      zoom: 4,
+      layers: [osmLayer] // default basemap
     });
 
     // Basemap switcher
     document.querySelectorAll('input[name="basemap"]').forEach(radio => {
       radio.addEventListener('change', function() {
-        osmLayer.setVisible(this.value === 'osm');
-        esriLayer.setVisible(this.value === 'esri');
+        if (this.value === 'osm') {
+          map.removeLayer(esriLayer);
+          map.addLayer(osmLayer);
+        } else if (this.value === 'esri') {
+          map.removeLayer(osmLayer);
+          map.addLayer(esriLayer);
+        }
       });
     });
 
     // WMS toggle
     document.getElementById('wmsToggle').addEventListener('change', function() {
-      wmsLayer.setVisible(this.checked);
+      if (this.checked) {
+        map.addLayer(wmsLayer);
+      } else {
+        map.removeLayer(wmsLayer);
+      }
     });
   </script>
 </body>
