@@ -27,22 +27,23 @@
 
   <script src="https://cdn.jsdelivr.net/npm/ol/ol.js"></script>
   <script>
-    // Define OSM basemap
+    // OSM basemap
     const osmLayer = new ol.layer.Tile({
       source: new ol.source.OSM(),
       visible: true
     });
 
-    // Define ESRI imagery basemap
+    // ESRI imagery basemap (correct XYZ source)
     const esriLayer = new ol.layer.Tile({
       source: new ol.source.XYZ({
-        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/' +
+        attributions: 'Tiles © Esri',
+        url: 'https://services.arcgisonline.com/ArcGIS/rest/services/' +
              'World_Imagery/MapServer/tile/{z}/{y}/{x}'
       }),
       visible: false
     });
 
-    // Define WMS overlay
+    // WMS overlay
     const wmsLayer = new ol.layer.Image({
       source: new ol.source.ImageWMS({
         url: 'https://ahocevar.com/geoserver/wms',
@@ -53,12 +54,12 @@
       visible: false
     });
 
-    // Create map
+    // Map
     const map = new ol.Map({
       target: 'map',
       layers: [osmLayer, esriLayer, wmsLayer],
       view: new ol.View({
-        center: ol.proj.fromLonLat([-98.5, 39.8]), // Center on continental US
+        center: ol.proj.fromLonLat([-98.5, 39.8]), // continental US
         zoom: 4
       })
     });
@@ -66,13 +67,8 @@
     // Basemap switcher
     document.querySelectorAll('input[name="basemap"]').forEach(radio => {
       radio.addEventListener('change', function() {
-        if (this.value === 'osm') {
-          osmLayer.setVisible(true);
-          esriLayer.setVisible(false);
-        } else if (this.value === 'esri') {
-          osmLayer.setVisible(false);
-          esriLayer.setVisible(true);
-        }
+        osmLayer.setVisible(this.value === 'osm');
+        esriLayer.setVisible(this.value === 'esri');
       });
     });
 
